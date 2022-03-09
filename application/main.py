@@ -8,7 +8,7 @@ from pymongo import MongoClient
 from starlette.responses import StreamingResponse
 
 from config import HOST, DB_PORT, PORT
-from pydloc.models import MLModel, MLAlgorithm, MLCollector, MLModelData, MLAlgorithmData, MLCollectorData
+from application.pydloc.models import MLModel, MLAlgorithm, MLCollector, MLModelData, MLAlgorithmData, MLCollectorData
 
 app = FastAPI()
 
@@ -63,18 +63,20 @@ async def get_model_list():
 @app.get("/model/{id}/{version}")
 async def get_model(id: int, version: int):
     db = client.repository
-    model_id = db.models.find_one({'id': id, 'version': version})['model_id']
-    db_grid = client.repository_grid
-    fs = gridfs.GridFSBucket(db_grid)
-    file_handler = fs.open_download_stream(ObjectId(model_id))
+    result = db.models.find_one({'id': id, 'version': version})
+    if 'model_id' in result and result['model_id'] is not None:
+        model_id = db.models.find_one({'id': id, 'version': version})['model_id']
+        db_grid = client.repository_grid
+        fs = gridfs.GridFSBucket(db_grid)
+        file_handler = fs.open_download_stream(ObjectId(model_id))
 
-    def read_gridfs():
-        eachline = file_handler.readline()
-        while eachline:
-            yield eachline
+        def read_gridfs():
             eachline = file_handler.readline()
+            while eachline:
+                yield eachline
+                eachline = file_handler.readline()
 
-    return StreamingResponse(read_gridfs())
+        return StreamingResponse(read_gridfs())
 
 
 @app.delete("/model/{id}/{version}", status_code=status.HTTP_204_NO_CONTENT)
@@ -250,5 +252,5 @@ async def delete_collector(name: str, version: int):
 
 
 if __name__ == "__main__":
-    with MongoClient(port=DB_PORT) as client:
+    with MongoClient('db', DB_PORT) as client:
         uvicorn.run(app, host=HOST, port=PORT)

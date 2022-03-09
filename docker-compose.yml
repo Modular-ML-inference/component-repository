@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+    app:
+        container_name: fl_repository
+        build: application
+        ports:
+            - "9012:9012"
+        depends_on:
+            - db
+    db:
+        image: mongo
+        ports:
+            - "27017:27017"
+        volumes:
+            - c:/data/db:/data/db
+            - c:/data/configdb:/data/configdb

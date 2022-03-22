@@ -12,6 +12,3 @@ services:
         image: mongo
         ports:
             - "27017:27017"
-        volumes:
-            - c:/data/db:/data/db
-            - c:/data/configdb:/data/configdb

@@ -54,10 +54,10 @@ async def update_model_meta(id: int, version: int, meta: MLModelData):
 
 @app.get("/model")
 async def get_model_list():
-    db = client.repository
-    keys = list(MLModel.__fields__)
-    list_m = [{key: document.get(key) for key in keys} for document in db.models.find()]
-    return list_m
+    database = client.repository
+    collection = database.models
+    models = collection.find({}, {'_id': 0})
+    return list(models)
 
 
 @app.get("/model/{id}/{version}")
@@ -135,10 +135,10 @@ async def update_algorithm_meta(name: str, version: int, meta: MLAlgorithmData):
 
 @app.get("/algorithm")
 async def get_algorithm_list():
-    db = client.repository
-    keys = list(MLAlgorithm.__fields__)
-    list_m = [{key: document.get(key) for key in keys} for document in db.algorithms.find()]
-    return list_m
+    database = client.repository
+    collection = database.algorithms
+    algorithms = collection.find({}, {'_id': 0})
+    return list(algorithms)
 
 
 @app.get("/algorithm/{name}/{version}")
@@ -214,10 +214,10 @@ async def update_collector_meta(name: str, version: int, meta: MLCollectorData):
 
 @app.get("/collector")
 async def get_collector_list():
-    db = client.repository
-    keys = list(MLCollector.__fields__)
-    list_m = [{key: document.get(key) for key in keys} for document in db.collectors.find()]
-    return list_m
+    database = client.repository
+    collection = database.collectors
+    collectors = collection.find({}, {'_id': 0})
+    return list(collectors)
 
 
 @app.get("/collector/{name}/{version}")

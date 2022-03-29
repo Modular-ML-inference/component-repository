@@ -1,14 +1,25 @@
 version: '3.8'
 
 services:
-    app:
+    fl_repository:
+        restart: always
         container_name: fl_repository
         build: application
+        networks:
+            - default
         ports:
-            - "9012:9012"
+            - "9013:9012"
         depends_on:
             - db
     db:
+        restart: always
         image: mongo
+        networks:
+            - default
         ports:
             - "27017:27017"
+
+networks:
+    default:
+        driver: bridge
+        name: custom_fl

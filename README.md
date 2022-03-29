@@ -1,11 +1,6 @@
 # FL Repository
 
-Prerequisites (in requirements.txt):
+Run `docker-compose -f docker-compose.yml up` to run the server.
 
-pip install fastapi
-pip install uvicorn
-
-To run: uvicorn main:app --reload
-
-Interactive API docs: http://127.0.0.1:8000/docs
+Interactive API docs: http://127.0.0.1:9013/docs
 

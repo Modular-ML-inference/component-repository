@@ -10,14 +10,13 @@ services:
         ports:
             - "9013:9012"
         depends_on:
-            - db
-    db:
+            - repository_db
+    repository_db:
+        container_name: repository_db
         restart: always
         image: mongo
         networks:
             - default
-        ports:
-            - "27017:27017"
 
 networks:
     default:

@@ -252,5 +252,5 @@ async def delete_collector(name: str, version: int):
 
 
 if __name__ == "__main__":
-    with MongoClient('db', DB_PORT) as client:
+    with MongoClient('repository_db', DB_PORT) as client:
         uvicorn.run(app, host=HOST, port=PORT)

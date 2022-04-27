@@ -16,8 +16,8 @@ app = FastAPI()
 @app.post("/model", status_code=status.HTTP_201_CREATED)
 async def create_model(model: MLModel):
     db = client.repository
-    if len(list(db.models.find({'id': model.id, 'version': model.version}).limit(1))) > 0:
-        raise HTTPException(status_code=400, detail='Model with this id and version already in repository')
+    if len(list(db.models.find({'name': model.model_name, 'version': model.model_version}).limit(1))) > 0:
+        raise HTTPException(status_code=400, detail='Model with this name and version already in repository')
     else:
         try:
             db.models.insert_one(model.dict(by_alias=True))
@@ -26,26 +26,26 @@ async def create_model(model: MLModel):
             raise HTTPException(status_code=500)
 
 
-@app.put("/model/{id}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_model(id: int, version: int, file: UploadFile = File(...)):
+@app.put("/model/{model_name}/{model_version}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_model(model_name: str, model_version: str, file: UploadFile = File(...)):
     db = client.repository
     db_grid = client.repository_grid
     fs = gridfs.GridFS(db_grid)
-    if len(list(db.models.find({'id': id, 'version': version}).limit(1))) > 0:
+    if len(list(db.models.find({'model_name': model_name, 'model_version': model_version}).limit(1))) > 0:
         data = await file.read()
-        model_id = fs.put(data, filename=f'model/{id}/{version}')
-        db.models.update_one({'id': id, 'version': version}, {"$set": {"model_id": str(model_id)}},
+        model_id = fs.put(data, filename=f'model/{model_name}/{model_version}')
+        db.models.update_one({'model_name': model_name, 'model_version': model_version}, {"$set": {"model_id": str(model_id)}},
                              upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="model not found")
 
 
-@app.put("/model/meta/{id}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_model_meta(id: int, version: int, meta: MLModelData):
+@app.put("/model/meta/{model_name}/{model_version}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_model_meta(model_name: str, model_version: str, meta: MLModelData):
     db = client.repository
-    if len(list(db.models.find({'id': id, 'version': version}).limit(1))) > 0:
-        db.models.update_one({'id': id, 'version': version}, {"$set": {"meta": dict(meta.meta)}},
+    if len(list(db.models.find({'model_name': model_name, 'model_version': model_version}).limit(1))) > 0:
+        db.models.update_one({'model_name': model_name, 'model_version': model_version}, {"$set": {"meta": dict(meta.meta)}},
                              upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
@@ -60,12 +60,12 @@ async def get_model_list():
     return list(models)
 
 
-@app.get("/model/{id}/{version}")
-async def get_model(id: int, version: int):
+@app.get("/model/{model_name}/{model_version}")
+async def get_model(model_name: str, model_version: str):
     db = client.repository
-    result = db.models.find_one({'id': id, 'version': version})
+    result = db.models.find_one({'model_name': model_name, 'model_version': model_version})
     if 'model_id' in result and result['model_id'] is not None:
-        model_id = db.models.find_one({'id': id, 'version': version})['model_id']
+        model_id = db.models.find_one({'model_name': model_name, 'model_version': model_version})['model_id']
         db_grid = client.repository_grid
         fs = gridfs.GridFSBucket(db_grid)
         file_handler = fs.open_download_stream(ObjectId(model_id))
@@ -79,14 +79,14 @@ async def get_model(id: int, version: int):
         return StreamingResponse(read_gridfs())
 
 
-@app.delete("/model/{id}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_model(id: int, version: int):
+@app.delete("/model/{model_name}/{model_version}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_model(model_name: str, model_version: str):
     db = client.repository
     db_grid = client.repository_grid
     fs = gridfs.GridFS(db_grid)
-    if len(list(db.models.find({'id': id, 'version': version}).limit(1))) > 0:
-        model_id = db.models.find_one({'id': id, 'version': version})['model_id']
-        db.models.delete_many({'id': id, 'version': version, 'model_id': model_id})
+    if len(list(db.models.find({'model_name': model_name, 'model_version': model_version}).limit(1))) > 0:
+        model_id = db.models.find_one({'model_name': model_name, 'model_version': model_version})['model_id']
+        db.models.delete_many({'model_name': model_name, 'model_version': model_version, 'model_id': model_id})
         fs.delete(model_id)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:

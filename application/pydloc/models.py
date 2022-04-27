@@ -8,8 +8,8 @@ class MLModelData(BaseModel):
 
 
 class MLModel(MLModelData):
-    id: int = Field(None, title="model identified, numeric")
-    version: int = Field(None, title="model version, numeric")
+    model_name: str = Field(None, title="model identified, string")
+    model_version: str = Field(None, title="model version, numeric")
     model_id: Optional[str] = Field(None, title="id under which model is stored in gridfs")
 
 

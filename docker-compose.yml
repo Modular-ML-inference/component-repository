@@ -14,7 +14,7 @@ services:
     repository_db:
         container_name: repository_db
         restart: always
-        image: mongo
+        build: mongo_db
         networks:
             - default
 

@@ -7,11 +7,12 @@ class MLTrainingResults(BaseModel):
     model_name: str = Field(None, title="model identified, string")
     model_version: str = Field(None, title="model version, numeric")
     training_id: str = Field(None, title="id of the training, results of "
-                                                    "which we're storing")
+                                         "which we're storing")
     results: Dict[str, str] = Field(None, title="training results as key-value pairs")
     weights_id: Optional[str] = Field(None, title="id under which final model weights "
                                                   "are "
-                                                   "stored in GridFS")
+                                                  "stored in GridFS")
+
 
 class MLModelData(BaseModel):
     meta: Dict[str, str] = Field(None, title="model metadata as key-value pairs")
@@ -28,10 +29,11 @@ class MLAlgorithmData(BaseModel):
     meta: Dict[str, str] = Field(None, title="algorithm metadata as key-value pairs")
 
 
-class MLAlgorithm(MLAlgorithmData):
+class MLStrategy(MLAlgorithmData):
     name: str = Field(None, title="algorithm name")
     version: int = Field(None, title="algorithm version, numeric")
-    algorithm_id: Optional[str] = Field(None, title="id under which algorithm is stored in GridFS")
+    algorithm_id: Optional[str] = Field(None,
+                                        title="id under which algorithm is stored in GridFS")
 
 
 class MLCollectorData(BaseModel):
@@ -41,4 +43,5 @@ class MLCollectorData(BaseModel):
 class MLCollector(MLCollectorData):
     name: str = Field(None, title="collector name")
     version: int = Field(None, title="collector version, numeric")
-    collector_id: Optional[str] = Field(None, title="id under which collector is stored in GridFS")
+    collector_id: Optional[str] = Field(None,
+                                        title="id under which collector is stored in GridFS")

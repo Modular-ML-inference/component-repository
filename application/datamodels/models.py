@@ -25,15 +25,16 @@ class MLModel(MLModelData):
                                                 "GridFS")
 
 
-class MLAlgorithmData(BaseModel):
+class MLStrategyData(BaseModel):
     meta: Dict[str, str] = Field(None, title="algorithm metadata as key-value pairs")
 
 
-class MLStrategy(MLAlgorithmData):
-    name: str = Field(None, title="algorithm name")
-    version: int = Field(None, title="algorithm version, numeric")
-    algorithm_id: Optional[str] = Field(None,
-                                        title="id under which algorithm is stored in GridFS")
+class MLStrategy(MLStrategyData):
+    strategy_name: str = Field(None, title="strategy name")
+    strategy_description: Optional[str] = Field(None, title="strategy description")
+    strategy_id: Optional[str] = Field(None,
+                                        title="id under which strategy is stored in "
+                                              "GridFS")
 
 
 class MLCollectorData(BaseModel):

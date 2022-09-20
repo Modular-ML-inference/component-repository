@@ -10,7 +10,7 @@ from starlette.responses import StreamingResponse
 from application.config import HOST, PORT
 from application.database import client
 from application.datamodels.models import MLModel, MLStrategy, MLCollector, MLModelData, \
-    MLAlgorithmData, MLCollectorData, MLTrainingResults
+    MLCollectorData, MLTrainingResults, MLStrategyData
 
 app = FastAPI()
 
@@ -24,7 +24,8 @@ def startup_db_client():
 async def create_model(model: MLModel):
     db = app.client.repository
     if len(list(db.models.find(
-            {'name': model.model_name, 'version': model.model_version}).limit(1))) > 0:
+            {'model_name': model.model_name, 'model_version': model.model_version}).limit(
+        1))) > 0:
         raise HTTPException(status_code=400,
                             detail='Model with this name and version already in repository')
     else:
@@ -113,7 +114,7 @@ async def delete_model(model_name: str, model_version: str):
                 'model_id']
         db.models.delete_many({'model_name': model_name, 'model_version': model_version,
                                'model_id': model_id})
-        fs.delete(model_id)
+        fs.delete(ObjectId(model_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="model not found")
@@ -194,11 +195,32 @@ async def get_results_weights(model_name: str, model_version: str, training_id: 
         return StreamingResponse(read_gridfs())
 
 
+@app.delete("/training-results/{model_name}/{model_version}/{training_id}",
+            status_code=status.HTTP_204_NO_CONTENT)
+async def delete_training_results(model_name: str, model_version: str, training_id: str):
+    db = app.client.repository
+    db_grid = app.client.repository_grid
+    fs = gridfs.GridFS(db_grid)
+    if len(list(db.results.find(
+            {'model_name': model_name, 'model_version': model_version,
+             'training_id': training_id}).limit(1))) > 0:
+        weights_id = db.results.find_one(
+            {'model_name': model_name, 'model_version': model_version,
+             'training_id': training_id})[
+            'weights_id']
+        db.results.delete_many({'model_name': model_name, 'model_version':
+            model_version, 'training_id': training_id})
+        fs.delete(ObjectId(weights_id))
+        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    else:
+        raise HTTPException(status_code=404, detail="model not found")
+
+
 @app.post("/strategy", status_code=status.HTTP_201_CREATED)
 async def create_strategy(strategy: MLStrategy):
     db = app.client.repository
     if len(list(db.strategies.find(
-            {'name': strategy.name, 'version': strategy.version}).limit(1))) > 0:
+            {'strategy_name': strategy.strategy_name}).limit(1))) > 0:
         raise HTTPException(status_code=400, detail='Strategy already exists')
     else:
         try:
@@ -208,15 +230,15 @@ async def create_strategy(strategy: MLStrategy):
             raise HTTPException(status_code=500)
 
 
-@app.put("/strategy/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_strategy(name: str, version: int, file: UploadFile = File(...)):
+@app.put("/strategy/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_strategy(name: str, file: UploadFile = File(...)):
     db = app.client.repository
     db_grid = app.client.repository_grid
     fs = gridfs.GridFS(db_grid)
-    if len(list(db.strategies.find({'name': name, 'version': version}).limit(1))) > 0:
+    if len(list(db.strategies.find({'strategy_name': name}).limit(1))) > 0:
         data = await file.read()
-        strategy_id = fs.put(data, filename=f'strategy/{name}/{version}')
-        db.strategies.update_one({'name': name, 'version': version},
+        strategy_id = fs.put(data, filename=f'strategy/{name}')
+        db.strategies.update_one({'strategy_name': name},
                                  {"$set": {"strategy_id": str(strategy_id)}},
                                  upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
@@ -224,11 +246,11 @@ async def update_strategy(name: str, version: int, file: UploadFile = File(...))
         raise HTTPException(status_code=404, detail="Strategy not found")
 
 
-@app.put("/strategy/meta/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_strategy_meta(name: str, version: int, meta: MLAlgorithmData):
+@app.put("/strategy/meta/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_strategy_meta(name: str, meta: MLStrategyData):
     db = app.client.repository
-    if len(list(db.strategies.find({'name': name, 'version': version}).limit(1))) > 0:
-        db.strategies.update_one({'name': name, 'version': version},
+    if len(list(db.strategies.find({'strategy_name': name}).limit(1))) > 0:
+        db.strategies.update_one({'strategy_name': name},
                                  {"$set": {"meta": dict(meta.meta)}},
                                  upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
@@ -244,10 +266,10 @@ async def get_strategy_list():
     return list(strategies)
 
 
-@app.get("/strategy/{name}/{version}")
-async def get_strategy(name: str, version: int):
+@app.get("/strategy/{name}")
+async def get_strategy(name: str):
     db = app.client.repository
-    strategy_id = db.strategies.find_one({'name': name, 'version': version})[
+    strategy_id = db.strategies.find_one({'strategy_name': name})[
         'strategy_id']
     db_grid = app.client.repository_grid
     fs = gridfs.GridFSBucket(db_grid)
@@ -262,17 +284,16 @@ async def get_strategy(name: str, version: int):
     return StreamingResponse(read_gridfs(), media_type="application/octet-stream")
 
 
-@app.delete("/strategy/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_strategy(name: str, version: int):
+@app.delete("/strategy/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_strategy(name: str):
     db = app.client.repository
     db_grid = app.client.repository_grid
     fs = gridfs.GridFS(db_grid)
-    if len(list(db.strategies.find({'name': name, 'version': version}).limit(1))) > 0:
-        strategy_id = db.strategies.find_one({'name': name, 'version': version})[
+    if len(list(db.strategies.find({'strategy_name': name}).limit(1))) > 0:
+        strategy_id = db.strategies.find_one({'strategy_name': name})[
             'strategy_id']
-        db.strategies.delete_many(
-            {'name': name, 'version': version, 'strategy_id': strategy_id})
-        fs.delete(strategy_id)
+        db.strategies.delete_many({'strategy_name': name})
+        fs.delete(ObjectId(strategy_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="model not found")
@@ -356,7 +377,7 @@ async def delete_collector(name: str, version: int):
             'collector_id']
         db.collectors.delete_many(
             {'name': name, 'version': version, 'collector_id': collector_id})
-        fs.delete(collector_id)
+        fs.delete(ObjectId(collector_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="model not found")

@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-from application.config import DB_PORT
+from application.config import DB_PORT, DB_ADDRESS
 
 
-client = MongoClient('repository_db', DB_PORT)
+client = MongoClient(DB_ADDRESS, DB_PORT)

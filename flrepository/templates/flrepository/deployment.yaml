@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flrepository.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "flrepository.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.flrepository.autoscaling.enabled }}
+  replicas: {{ .Values.flrepository.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "flrepository.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "flrepository.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.flrepository.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.flrepository.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.flrepository.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.flrepository.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.flrepository.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.flrepository.name }}
+          securityContext:
+            {{- toYaml .Values.flrepository.securityContext | nindent 12 }}
+          image: "{{ .Values.flrepository.image.repository }}:{{ .Values.flrepository.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.flrepository.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.flrepository.service1.containerPort }}
+              protocol: {{ .Values.flrepository.service1.protocol }}
+          resources:
+            {{- toYaml .Values.flrepository.resources | nindent 12 }}
+          {{- with .Values.flrepository.envVars }}
+          env:
+            - name: EXAMPLE_ENV_VAR
+              value: {{ .exampleEnvVar | quote }}
+          {{- end }}

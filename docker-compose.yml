@@ -1,18 +1,18 @@
 version: '3.8'
 
 services:
-    fl_repository:
+    flrepository:
         restart: always
-        container_name: fl_repository
+        container_name: flrepository
         build: application
         networks:
             - default
         ports:
             - "9013:9012"
         depends_on:
-            - repository_db
-    repository_db:
-        container_name: repository_db
+            - repositorydb
+    repositorydb:
+        container_name: repositorydb
         restart: always
         build: mongo_db
         networks:

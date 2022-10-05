@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "repositorydb.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "repositorydb.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.repositorydb.autoscaling.enabled }}
+  replicas: {{ .Values.repositorydb.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "repositorydb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "repositorydb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.repositorydb.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repositorydb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repositorydb.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.repositorydb.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.repositorydb.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.repositorydb.name }}
+          securityContext:
+            {{- toYaml .Values.repositorydb.securityContext | nindent 12 }}
+          image: "{{ .Values.repositorydb.image.repository }}:{{ .Values.repositorydb.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.repositorydb.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.repositorydb.service1.containerPort }}
+              protocol: {{ .Values.repositorydb.service1.protocol }}
+          resources:
+            {{- toYaml .Values.repositorydb.resources | nindent 12 }}
+          {{- with .Values.repositorydb.envVars }}
+          env:
+            - name: EXAMPLE_ENV_VAR
+              value: {{ .exampleEnvVar | quote }}
+          {{- end }}

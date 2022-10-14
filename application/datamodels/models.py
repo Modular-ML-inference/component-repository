@@ -15,14 +15,15 @@ class MLTrainingResults(BaseModel):
 
 
 class MLModelData(BaseModel):
-    meta: Dict[str, str] = Field(None, title="model metadata as key-value pairs")
+    library: str = Field(None, title="the model library")
 
 
-class MLModel(MLModelData):
+class MLModel(BaseModel):
     model_name: str = Field(None, title="model identified, string")
     model_version: str = Field(None, title="model version, numeric")
     model_id: Optional[str] = Field(None, title="id under which model is stored in "
                                                 "GridFS")
+    meta: MLModelData = Field(None, title="model metadata as key-value pairs")
 
 
 class MLStrategyData(BaseModel):

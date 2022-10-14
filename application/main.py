@@ -4,6 +4,7 @@ from typing import Optional
 import gridfs
 import uvicorn
 from bson import ObjectId
+from logging import log, INFO
 from fastapi import FastAPI, status, UploadFile, File, Response, HTTPException
 from starlette.responses import StreamingResponse
 
@@ -60,7 +61,7 @@ async def update_model_meta(model_name: str, model_version: str, meta: MLModelDa
     if len(list(db.models.find(
             {'model_name': model_name, 'model_version': model_version}).limit(1))) > 0:
         db.models.update_one({'model_name': model_name, 'model_version': model_version},
-                             {"$set": {"meta": dict(meta.meta)}},
+                             {"$set": {"meta": dict(meta)}},
                              upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
@@ -76,6 +77,18 @@ async def get_model_list(trained: Optional[bool] = None):
         models = [m for m in models if await get_results_list(m["model_name"],
                                                               m["model_version"])]
     return list(models)
+
+
+@app.get("/model/meta")
+async def get_model_meta(model_name: str, model_version: str):
+    db = app.client.repository
+    if len(list(db.models.find(
+            {'model_name': model_name, 'model_version': model_version}).limit(1))) > 0:
+        result = db.models.find_one(
+            {'model_name': model_name, 'model_version': model_version}, {'_id': 0})
+        return dict(result)
+    else:
+        raise HTTPException(status_code=404, detail="model meta not found")
 
 
 @app.get("/model/{model_name}/{model_version}")

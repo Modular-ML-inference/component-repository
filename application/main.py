@@ -152,6 +152,14 @@ async def create_training_results(training: MLTrainingResults):
             raise HTTPException(status_code=500)
 
 
+@app.get("/training-results")
+async def get_all_training_results():
+    database = client.repository
+    collection = database.results
+    results = collection.find({}, {'_id': 0})
+    return list(results)
+
+
 @app.get("/training-results/{model_name}/{model_version}")
 async def get_results_list(model_name: str, model_version: str):
     database = app.client.repository
@@ -161,9 +169,10 @@ async def get_results_list(model_name: str, model_version: str):
     return list(results)
 
 
-@app.put("/training-results/{model_name}/{model_version}/{training_id}",
+@app.put("/training-results/{model_name}/{model_version}/{training_id}/{configuration_id}",
          status_code=status.HTTP_204_NO_CONTENT)
-async def update_results(model_name: str, model_version: str, training_id: str, file:
+async def update_results(model_name: str, model_version: str, training_id: str,
+                         configuration_id: str, file:
 UploadFile = File(...)):
     db = app.client.repository
     db_grid = app.client.repository_grid
@@ -172,8 +181,8 @@ UploadFile = File(...)):
             {'model_name': model_name, 'model_version': model_version, 'training_id':
                 training_id}).limit(1))) > 0:
         data = await file.read()
-        weights_id = fs.put(data, filename=f'weights/{model_name}/{model_version}/'
-                                           f'{training_id}')
+        weights_id = fs.put(data, filename=f'weights/{model_name}/{model_version}/{configuration_id}',
+                                           training_id=f'{training_id}')
         db.results.update_one({'model_name': model_name, 'model_version':
             model_version, 'training_id': training_id},
                               {"$set": {"weights_id": str(weights_id)}},
@@ -196,7 +205,7 @@ async def get_results_weights(model_name: str, model_version: str, training_id: 
                  'training_id': training_id})[
                 'weights_id']
         db_grid = app.client.repository_grid
-        fs = gridfs.GridFSBucket(db_grid)
+        """fs = gridfs.GridFSBucket(db_grid)
         file_handler = fs.open_download_stream(ObjectId(model_id))
 
         def read_gridfs():
@@ -205,7 +214,10 @@ async def get_results_weights(model_name: str, model_version: str, training_id: 
                 yield eachline
                 eachline = file_handler.readline()
 
-        return StreamingResponse(read_gridfs())
+        return StreamingResponse(read_gridfs())"""
+    fs = gridfs.GridFS(db_grid)
+    outputdata = fs.get(ObjectId(model_id)).read()
+    return Response(content=base64.b64encode(outputdata))
 
 
 @app.delete("/training-results/{model_name}/{model_version}/{training_id}",
@@ -394,6 +406,24 @@ async def delete_collector(name: str, version: int):
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="model not found")
+
+
+@app.get("/models/available")
+async def get_available_models():
+    database = client.repository_grid
+    collection = database.fs.files
+    modelsAvailable = collection.find({}, {'_id': 0}).sort('uploadDate', 1)
+    return list(modelsAvailable)
+
+
+@app.get("/models/download/shell/{filename}")
+async def get_model_trained(filename: str):
+    parseFilename = filename.replace("_", "/")
+    database = client.repository_grid
+    collection = database.fs.files
+    model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDAte',
+                                                                          -1).limit(1)
+    return list(model)
 
 
 @app.on_event("shutdown")

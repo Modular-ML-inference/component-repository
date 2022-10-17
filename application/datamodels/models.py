@@ -12,6 +12,8 @@ class MLTrainingResults(BaseModel):
     weights_id: Optional[str] = Field(None, title="id under which final model weights "
                                                   "are "
                                                   "stored in GridFS")
+    configuration_id: str = Field(None, title="id of the configuration, results of "
+                                              "which we're storing")
 
 
 class MLModelData(BaseModel):

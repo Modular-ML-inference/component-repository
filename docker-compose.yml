@@ -5,6 +5,8 @@ services:
         restart: always
         container_name: fl_repository
         build: application
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         networks:
             - default
         ports:
@@ -17,6 +19,8 @@ services:
         build: mongo_db
         networks:
             - default
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
 
 networks:
     default:

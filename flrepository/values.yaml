@@ -17,9 +17,10 @@ flrepository:
   replicaCount: 1
   service1:
     type: NodePort
-    nodePort: ""
+    nodePort: "30913"
     port: 80
     targetPort: 9012
+
     containerPort: 9012
     protocol: TCP
 

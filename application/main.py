@@ -412,7 +412,7 @@ async def delete_collector(name: str, version: int):
 async def get_available_models():
     database = client.repository_grid
     collection = database.fs.files
-    modelsAvailable = collection.find({}, {'_id': 0}).sort('uploadDate', -1)
+    modelsAvailable = collection.find({}, {'_id': 0}).sort('uploadDate', 1)
     return list(modelsAvailable)
 
 
@@ -421,7 +421,7 @@ async def get_model_trained(filename: str):
     parseFilename = filename.replace("_", "/")
     database = client.repository_grid
     collection = database.fs.files
-    model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDate',
+    model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDAte',
                                                                           -1).limit(1)
     return list(model)
 

@@ -1,3 +1,4 @@
+import base64
 from http import HTTPStatus
 from typing import Optional
 
@@ -11,7 +12,7 @@ from starlette.responses import StreamingResponse
 from application.config import HOST, PORT
 from application.database import client
 from application.datamodels.models import MLModel, MLStrategy, MLCollector, MLModelData, \
-    MLCollectorData, MLTrainingResults, MLStrategyData
+    MLCollectorData, MLTrainingResults, MLStrategyData, FLDataTransformation
 
 app = FastAPI()
 
@@ -238,7 +239,7 @@ async def delete_training_results(model_name: str, model_version: str, training_
         fs.delete(ObjectId(weights_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
-        raise HTTPException(status_code=404, detail="model not found")
+        raise HTTPException(status_code=404, detail="Training results not found")
 
 
 @app.post("/strategy", status_code=status.HTTP_201_CREATED)
@@ -321,7 +322,7 @@ async def delete_strategy(name: str):
         fs.delete(ObjectId(strategy_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
-        raise HTTPException(status_code=404, detail="model not found")
+        raise HTTPException(status_code=404, detail="Strategy not found")
 
 
 @app.post("/collector", status_code=status.HTTP_201_CREATED)
@@ -405,7 +406,7 @@ async def delete_collector(name: str, version: int):
         fs.delete(ObjectId(collector_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
-        raise HTTPException(status_code=404, detail="model not found")
+        raise HTTPException(status_code=404, detail="Collector not found")
 
 
 @app.get("/models/available")
@@ -425,6 +426,88 @@ async def get_model_trained(filename: str):
                                                                           -1).limit(1)
     return list(model)
 
+
+@app.post("/transformation", status_code=status.HTTP_201_CREATED)
+async def create_transformation(transformation: FLDataTransformation):
+    db = app.client.repository
+    if len(list(db.transformations.find(
+            {'id': transformation.id}).limit(1))) > 0:
+        raise HTTPException(status_code=400, detail='Transformation with this id already exists')
+    else:
+        try:
+            db.transformations.insert_one(transformation.dict(by_alias=True))
+        except Exception as e:
+            print("An exception occurred ::", e)
+            raise HTTPException(status_code=500)
+
+
+@app.put("/transformation/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_transformation(id: str, file: UploadFile = File(...)):
+    db = app.client.repository
+    db_grid = app.client.repository_grid
+    fs = gridfs.GridFS(db_grid)
+    if len(list(db.transformations.find({'id': id}).limit(1))) > 0:
+        data = await file.read()
+        transformation_id = fs.put(data, filename=f'transformation/{id}')
+        db.strategies.update_one({'id': id},
+                                 {"$set": {"storage_id": str(transformation_id)}},
+                                 upsert=False)
+        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    else:
+        raise HTTPException(status_code=404, detail="Transformation not found")
+
+
+@app.put("/transformation/meta/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_transformation_meta(meta: FLDataTransformation):
+    db = app.client.repository
+    if len(list(db.transformations.find({'id': meta.id}).limit(1))) > 0:
+        db.transformations.update_one({'id': meta.id},
+                                 {"$set": dict(meta)},
+                                 upsert=False)
+        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    else:
+        raise HTTPException(status_code=404, detail="Transformation not found")
+
+
+@app.get("/transformation")
+async def get_transformation_list():
+    database = app.client.repository
+    collection = database.transformations
+    transformations = collection.find({}, {'_id': 0, 'storage_id': 0})
+    return list(transformations)
+
+
+@app.get("/transformation/{id}")
+async def get_transformation(id: str):
+    db = app.client.repository
+    storage_id = db.transformations.find_one({'id': id})[
+        'storage_id']
+    db_grid = app.client.repository_grid
+    fs = gridfs.GridFSBucket(db_grid)
+    file_handler = fs.open_download_stream(ObjectId(storage_id))
+
+    def read_gridfs():
+        eachline = file_handler.readline()
+        while eachline:
+            yield eachline
+            eachline = file_handler.readline()
+
+    return StreamingResponse(read_gridfs(), media_type="application/octet-stream")
+
+
+@app.delete("/transformation/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_transformation(id: str):
+    db = app.client.repository
+    db_grid = app.client.repository_grid
+    fs = gridfs.GridFS(db_grid)
+    if len(list(db.transformations.find({'id': id}).limit(1))) > 0:
+        storage_id = db.transformations.find_one({'id': id})[
+            'storage_id']
+        db.transformations.delete_many({'id': id})
+        fs.delete(ObjectId(storage_id))
+        return Response(status_code=HTTPStatus.NO_CONTENT.value)
+    else:
+        raise HTTPException(status_code=404, detail="Transformation not found")
 
 @app.on_event("shutdown")
 def shutdown_db_client():

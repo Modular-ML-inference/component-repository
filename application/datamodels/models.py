@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, List, Any
 
 from pydantic import BaseModel, Field
 
@@ -36,8 +36,8 @@ class MLStrategy(MLStrategyData):
     strategy_name: str = Field(None, title="strategy name")
     strategy_description: Optional[str] = Field(None, title="strategy description")
     strategy_id: Optional[str] = Field(None,
-                                        title="id under which strategy is stored in "
-                                              "GridFS")
+                                       title="id under which strategy is stored in "
+                                             "GridFS")
 
 
 class MLCollectorData(BaseModel):
@@ -49,3 +49,33 @@ class MLCollector(MLCollectorData):
     version: int = Field(None, title="collector version, numeric")
     collector_id: Optional[str] = Field(None,
                                         title="id under which collector is stored in GridFS")
+
+
+class MachineCapabilities(BaseModel):
+    storage: Optional[float] = Field(None, title="the amount of storage needed in gigabytes, float")
+    RAM: Optional[float] = Field(None, title="the amount of RAM needed in gigabytes, float")
+    GPU: bool = Field(False, title="whether the existence of a GPU is needed, bool")
+    preinstalled_libraries: Dict[str, str] = Field(None,
+                                                   title="a list of necessary/available preinstalled libraries with compliant versions")
+    available_models: Dict[str, str] = Field(None,
+                                             title="a list of necessary/available models named by their name and version")
+
+
+class FLDataTransformation(BaseModel):
+    id: str
+    description: Optional[str] = Field(None,
+                                       title="the available data explaining the purpose of a given transformation")
+    parameter_types: Dict[str, str] = Field(None, title="the list of input parameters and their types")
+    default_values: Dict[str, Any] = Field(None,
+                                           title="for the parameters having default values, input them along with the description of values")
+    outputs: List[str] = Field(None, title="List of outputs and their expected types")
+    needs: MachineCapabilities
+
+
+class FLDataTransformationConfig(BaseModel):
+    id: str
+    params: Dict[str, Any]
+
+
+class FLDataTransformationPipelineConfig(BaseModel):
+    configuration: Dict[str, List[FLDataTransformationConfig]]

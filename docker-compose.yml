@@ -4,7 +4,8 @@ services:
     flrepository:
         restart: always
         container_name: flrepository
-        build: application
+        build:
+            context: "."
         extra_hosts:
             - "host.docker.internal:host-gateway"
         networks:
@@ -16,7 +17,9 @@ services:
     repositorydb:
         container_name: repositorydb
         restart: always
-        build: mongo_db
+        build:
+            context: "."
+            dockerfile: "Dockerfile.db"
         networks:
             - default
         volumes:

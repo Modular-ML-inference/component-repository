@@ -3,6 +3,7 @@ version: '3.8'
 services:
     flrepository:
         restart: always
+        image: karola766/flrepository:latest
         container_name: flrepository
         build:
             context: "."
@@ -15,6 +16,7 @@ services:
         depends_on:
             - repositorydb
     repositorydb:
+        image: karola766/repositorydb:latest
         container_name: repositorydb
         restart: always
         build:

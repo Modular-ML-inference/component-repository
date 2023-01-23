@@ -24,10 +24,15 @@ services:
             dockerfile: "Dockerfile.db"
         networks:
             - default
+        ports:
+            - "27017-27019:27017-27019"
         volumes:
             - type: bind
               source: ./mongo_db/dump
               target: /dump
+            - type: bind
+              source: ./mongo_volume
+              target: /bitnami/mongodb
         extra_hosts:
             - "host.docker.internal:host-gateway"
 

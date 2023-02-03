@@ -34,8 +34,18 @@ Create chart name and version as used by the chart label.
 Name of the component flrepository.
 */}}
 {{- define "flrepository.name" -}}
-{{ include "enabler.name" . }}-flrepository
+{{- printf "%s-flrepository" (include "enabler.name" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
+
+{{/*
+Create a default fully qualified component flrepository name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "flrepository.fullname" -}}
+{{- printf "%s-flrepository" (include "enabler.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 
 {{/*
 Component flrepository labels
@@ -56,16 +66,32 @@ Component flrepository selector labels
 app.kubernetes.io/name: {{ include "enabler.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 enabler: {{ .Chart.Name }}
-component: {{ .Values.flrepository.name }}
+app.kubernetes.io/component: flrepository
 isMainInterface: "yes"
-tier: {{ .Values.flrepository.tier}}
+tier: {{ .Values.flrepository.tier }}
 {{- end }}
 
 {{/*
 Name of the component repositorydb.
 */}}
 {{- define "repositorydb.name" -}}
-{{ include "enabler.name" . }}-repositorydb
+{{- printf "%s-repositorydb" (include "enabler.name" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified component repositorydb name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "repositorydb.fullname" -}}
+{{- printf "%s-repositorydb" (include "enabler.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create the default FQDN for repositorydb headless service.
+*/}}
+{{- define "repositorydb.svc.headless" -}}
+{{- printf "%s-headless" (include "repositorydb.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -87,8 +113,8 @@ Component repositorydb selector labels
 app.kubernetes.io/name: {{ include "enabler.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 enabler: {{ .Chart.Name }}
-component: {{ .Values.repositorydb.name }}
+app.kubernetes.io/component: repositorydb
 isMainInterface: "no"
-tier: {{ .Values.repositorydb.tier}}
+tier: {{ .Values.repositorydb.tier }}
 {{- end }}
 

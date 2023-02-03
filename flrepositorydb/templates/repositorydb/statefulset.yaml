@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: {{ include "repositorydb.name" . }}
+  name: {{ include "repositorydb.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "repositorydb.labels" . | nindent 4 }}
 spec:
+  serviceName: {{ include "repositorydb.fullname" . }}-headless
   {{- if not .Values.repositorydb.autoscaling.enabled }}
   replicas: {{ .Values.repositorydb.replicaCount }}
   {{- end }}
@@ -15,15 +16,21 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "repositorydb.selectorLabels" . | nindent 8 }}
+        {{- include "repositorydb.labels" . | nindent 8 }}
     spec:
       {{- with .Values.repositorydb.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.repositorydb.nodeSelector }}
+      {{- with .Values.enablerNodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not .Values.enablerNodeSelector }}
+        {{- with .Values.repositorydb.nodeSelector }}
+      nodeSelector:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       {{- with .Values.repositorydb.affinity }}
       affinity:
@@ -36,14 +43,14 @@ spec:
       securityContext:
         {{- toYaml .Values.repositorydb.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.repositorydb.name }}
+        - name: repositorydb
           securityContext:
             {{- toYaml .Values.repositorydb.securityContext | nindent 12 }}
           image: "{{ .Values.repositorydb.image.repository }}:{{ .Values.repositorydb.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.repositorydb.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.repositorydb.service1.containerPort }}
-              protocol: {{ .Values.repositorydb.service1.protocol }}
+            - containerPort: {{ .Values.repositorydb.service.containerPort }}
+              protocol: {{ .Values.repositorydb.service.protocol }}
           resources:
             {{- toYaml .Values.repositorydb.resources | nindent 12 }}
           {{- with .Values.repositorydb.envVars }}
@@ -51,3 +58,17 @@ spec:
             - name: EXAMPLE_ENV_VAR
               value: {{ .exampleEnvVar | quote }}
           {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/mongodb
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+        {{- range .Values.repositorydb.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.repositorydb.persistence.size | quote }}

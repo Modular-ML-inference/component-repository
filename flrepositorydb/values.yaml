@@ -2,12 +2,16 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# String to partially override enabler.fullname template (will maintain the release name)
 nameOverride: ""
+# String to fully override enabler.fullname template
 fullnameOverride: ""
+# Deploy all the components in the same node
+enablerNodeSelector: {}
 
+# Component flrepository values
 flrepository:
-  name: flrepository
-  tier: internal
+  tier: external
   image:
     repository: karola766/flrepository
     pullPolicy: IfNotPresent
@@ -15,7 +19,7 @@ flrepository:
     tag: "latest"
 
   replicaCount: 1
-  service1:
+  service:
     type: NodePort
     nodePort: ""
     port: 9012
@@ -23,11 +27,9 @@ flrepository:
     containerPort: 9012
     protocol: TCP
 
-
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # The specification of the resources is needed for the proper functioning 
+  # of the Smart Orchestrator enabler (requests)
+  # and of the Resource provisioning enabler (limits)
   resources: {}
     # limits:
     #   cpu: 100m
@@ -54,6 +56,8 @@ flrepository:
     # runAsNonRoot: true
     # runAsUser: 1000
 
+  # Include here the environment variables to be used in the component's manifest (container section).
+  # Here and in the manifest is included an example.
   envVars:
     exampleEnvVar: exampleValue
 
@@ -63,8 +67,8 @@ flrepository:
   tolerations: []
   affinity: {}
 
+# Component repositorydb values
 repositorydb:
-  name: repositorydb
   tier: internal
   image:
     repository: karola766/repositorydb
@@ -73,7 +77,7 @@ repositorydb:
     tag: "latest"
 
   replicaCount: 1
-  service1:
+  service:
     type: NodePort
     nodePort: "30001"
     port: 27017
@@ -81,11 +85,9 @@ repositorydb:
     containerPort: 27017
     protocol: TCP
 
-
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # The specification of the resources is needed for the proper functioning 
+  # of the Smart Orchestrator enabler (requests)
+  # and of the Resource provisioning enabler (limits)
   resources: {}
     # limits:
     #   cpu: 100m
@@ -112,9 +114,17 @@ repositorydb:
     # runAsNonRoot: true
     # runAsUser: 1000
 
+  # Include here the environment variables to be used in the component's manifest (container section).
+  # Here and in the manifest is included an example.
   envVars:
     exampleEnvVar: exampleValue
 
+  persistence:
+    hostPath: /
+    mountPath: /data
+    accessModes:
+      - ReadWriteOnce
+    size: 50Mi
 
   imagePullSecrets: []
   nodeSelector: {}

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "flrepository.name" . }}
+  name: {{ include "flrepository.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "flrepository.labels" . | nindent 4 }}
@@ -15,15 +15,21 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "flrepository.selectorLabels" . | nindent 8 }}
+        {{- include "flrepository.labels" . | nindent 8 }}
     spec:
       {{- with .Values.flrepository.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.flrepository.nodeSelector }}
+      {{- with .Values.enablerNodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if not .Values.enablerNodeSelector }}
+        {{- with .Values.flrepository.nodeSelector }}
+      nodeSelector:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       {{- with .Values.flrepository.affinity }}
       affinity:
@@ -36,14 +42,14 @@ spec:
       securityContext:
         {{- toYaml .Values.flrepository.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Values.flrepository.name }}
+        - name: flrepository
           securityContext:
             {{- toYaml .Values.flrepository.securityContext | nindent 12 }}
           image: "{{ .Values.flrepository.image.repository }}:{{ .Values.flrepository.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.flrepository.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.flrepository.service1.containerPort }}
-              protocol: {{ .Values.flrepository.service1.protocol }}
+            - containerPort: {{ .Values.flrepository.service.containerPort }}
+              protocol: {{ .Values.flrepository.service.protocol }}
           resources:
             {{- toYaml .Values.flrepository.resources | nindent 12 }}
           {{- with .Values.flrepository.envVars }}

@@ -1,4 +1,4 @@
 FROM docker.io/bitnami/mongodb:6.0
 ARG CACHEBUST=1
-#COPY mongo_db/dump /dump
-#COPY mongo_db/restore.sh /docker-entrypoint-initdb.d/
+COPY mongo_db/dump /dump
+COPY mongo_db/restore.sh /docker-entrypoint-initdb.d/

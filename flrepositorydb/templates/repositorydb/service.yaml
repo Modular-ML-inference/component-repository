@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "repositorydb.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "repositorydb.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.repositorydb.service.type }}
+  ports:
+    - port: {{ .Values.repositorydb.service.port }}
+      targetPort: {{ .Values.repositorydb.service.targetPort }}
+      protocol: {{ .Values.repositorydb.service.protocol }}
+      {{- if and (or (eq .Values.repositorydb.service.type "NodePort") (eq .Values.repositorydb.service.type "LoadBalancer")) (not (empty .Values.repositorydb.service.nodePort)) }}
+      nodePort: {{ .Values.repositorydb.service.nodePort }}
+      {{ end }}
+  selector:
+    {{- include "repositorydb.selectorLabels" . | nindent 4 }}

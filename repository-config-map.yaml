@@ -1,0 +1,11 @@
+kind: ConfigMap 
+apiVersion: v1 
+metadata:
+  name: repository-configmap 
+data:
+  # Configuration values can be set as key-value properties
+  HOST: 0.0.0.0
+  PORT: "9012"
+  DB_PORT: "27017"
+  SERVER_PORT: "8000"
+  DB_ADDRESS: "flrepositorylocal-flrepositorydb-repositorydb"

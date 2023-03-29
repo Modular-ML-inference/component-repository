@@ -1,6 +1,7 @@
-HOST = "0.0.0.0"
-PORT = 9012
-DB_PORT = 27017
-SERVER_PORT = 8000
-DB_ADDRESS = "flrepositorylocal-flrepositorydb-repositorydb.default.svc.cluster.local"
-#DB_ADDRESS = "repositorydb"
+import os
+
+HOST = os.environ['HOST']
+PORT = os.environ['PORT']
+DB_PORT = os.environ['DB_PORT']
+SERVER_PORT = os.environ['SERVER_PORT']
+DB_ADDRESS = os.environ['DB_ADDRESS']

@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 mongo_volume/*
-
+mongo_db/db.dump
 .helmignore
 # C extensions
 *.so

@@ -515,4 +515,4 @@ def shutdown_db_client():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=HOST, port=PORT)
+    uvicorn.run(app, host=HOST, port=int(PORT))

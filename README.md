@@ -8,4 +8,11 @@ Interactive API docs: http://127.0.0.1:9013/docs
 
 New additions:
 
+# Kubernetes configuration
+
+In order to properly set up the enabler with the use of Helm charts, first you have to set up the appropriate configuration. For this purposes, the `repository-config-map.yaml` is included in this repository. This is a ConfigMap containing information that may be specific to this deployment that the application must be able to access.
+
+After performing appropriate modifications, run `kubectl apply -f training-collector-config-map.yaml` to create the ConfigMap. Finally, run `helm install trainingcollectorlocal trainingcollector` in order to properly install the release using Helm charts.
+
+
 

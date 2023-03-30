@@ -14,7 +14,7 @@ flrepository:
   tier: external
   image:
     repository: karola766/flrepository
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
 
@@ -72,7 +72,7 @@ repositorydb:
   tier: internal
   image:
     repository: karola766/repositorydb
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
 

@@ -8,4 +8,4 @@ data:
   PORT: "9012"
   DB_PORT: "27017"
   SERVER_PORT: "8000"
-  DB_ADDRESS: "flrepositorylocal-flrepositorydb-repositorydb"
+  DB_ADDRESS: "flrepositorylocaldb-flrepositorydb-repositorydb"

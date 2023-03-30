@@ -53,7 +53,7 @@ spec:
           resources:
             {{- toYaml .Values.flrepository.resources | nindent 12 }}
           {{- with .Values.flrepository.envVars }}
-          env:
-            - name: EXAMPLE_ENV_VAR
-              value: {{ .exampleEnvVar | quote }}
+          envFrom:
+            - configMapRef:
+                name: repository-configmap
           {{- end }}

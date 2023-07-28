@@ -14,5 +14,7 @@ In order to properly set up the enabler with the use of Helm charts, first you h
 
 After performing appropriate modifications, run `kubectl apply -f repository-config-map.yaml` to create the ConfigMap. Finally, run `helm install flrepositorylocaldb flrepositorydb` in order to properly install the release using Helm charts.
 
+You can later use `kubectl port-forward <podname> <hostport>:9012` to forward port to your localhost and easily set up local configuration on `127.0.0.1:9012/docs`.
+
 
 

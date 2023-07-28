@@ -70,6 +70,9 @@ class FLDataTransformation(BaseModel):
                                            title="for the parameters having default values, input them along with the description of values")
     outputs: List[str] = Field(None, title="List of outputs and their expected types")
     needs: MachineCapabilities
+    storage_id: Optional[str] = Field(None,
+                                       title="id under which strategy is stored in "
+                                             "GridFS")
 
 
 class FLDataTransformationConfig(BaseModel):

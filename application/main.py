@@ -449,7 +449,7 @@ async def update_transformation(id: str, file: UploadFile = File(...)):
     if len(list(db.transformations.find({'id': id}).limit(1))) > 0:
         data = await file.read()
         transformation_id = fs.put(data, filename=f'transformation/{id}')
-        db.strategies.update_one({'id': id},
+        db.transformations.update_one({'id': id},
                                  {"$set": {"storage_id": str(transformation_id)}},
                                  upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
@@ -492,7 +492,7 @@ async def get_transformation(id: str):
             yield eachline
             eachline = file_handler.readline()
 
-    return StreamingResponse(read_gridfs(), media_type="application/octet-stream")
+    return StreamingResponse(read_gridfs())
 
 
 @app.delete("/transformation/{id}", status_code=status.HTTP_204_NO_CONTENT)

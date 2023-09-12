@@ -22,7 +22,7 @@ services:
         depends_on:
             - repositorydb
     repositorydb:
-        image: karola766/repositorydb:latest
+        image: karola766/repositorydb-priv:latest
         container_name: repositorydb
         restart: always
         build:
@@ -41,4 +41,6 @@ services:
             #  target: /bitnami/mongodb
         extra_hosts:
             - "host.docker.internal:host-gateway"
+
+
 

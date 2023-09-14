@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional, List, Any, Union
 
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,7 @@ class MLTrainingResults(BaseModel):
     model_version: str = Field(None, title="model version, numeric")
     training_id: str = Field(None, title="id of the training, results of "
                                          "which we're storing")
-    results: Dict[str, str] = Field(None, title="training results as key-value pairs")
+    results: Dict[str, Union[str, float]] = Field(None, title="training results as key-value pairs")
     weights_id: Optional[str] = Field(None, title="id under which final model weights "
                                                   "are "
                                                   "stored in GridFS")

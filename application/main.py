@@ -422,7 +422,7 @@ async def get_model_trained(filename: str):
     parseFilename = filename.replace("_", "/")
     database = client.repository_grid
     collection = database.fs.files
-    model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDAte',
+    model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDate',
                                                                           -1).limit(1)
     return list(model)
 

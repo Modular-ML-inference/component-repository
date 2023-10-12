@@ -18,6 +18,7 @@ class MLTrainingResults(BaseModel):
 
 class MLModelData(BaseModel):
     library: str = Field(None, title="the model library")
+    description: str = Field(None, title="description of what the model is for (more or less)")
 
 
 class MLModel(BaseModel):

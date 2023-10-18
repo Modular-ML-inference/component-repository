@@ -12,7 +12,7 @@ from starlette.responses import StreamingResponse
 from application.config import HOST, PORT
 from application.database import client
 from application.datamodels.models import MLModel, MLStrategy, MLCollector, MLModelData, \
-    MLCollectorData, MLTrainingResults, MLStrategyData, FLDataTransformation
+     MLTrainingResults, MLStrategyData, FLDataTransformation
 
 app = FastAPI()
 
@@ -338,75 +338,6 @@ async def create_collector(collector: MLCollector):
             print("An exception occurred ::", e)
             raise HTTPException(status_code=500)
 
-
-@app.put("/collector/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_collector(name: str, version: int, file: UploadFile = File(...)):
-    db = app.client.repository
-    db_grid = app.client.repository_grid
-    fs = gridfs.GridFS(db_grid)
-    if len(list(db.collectors.find({'name': name, 'version': version}).limit(1))) > 0:
-        data = await file.read()
-        collector_id = fs.put(data, filename=f'collector/{name}/{version}')
-        db.collectors.update_one({'name': name, 'version': version},
-                                 {"$set": {"collector_id": str(collector_id)}},
-                                 upsert=False)
-        return Response(status_code=HTTPStatus.NO_CONTENT.value)
-    else:
-        raise HTTPException(status_code=404, detail="collector not found")
-
-
-@app.put("/collector/meta/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_collector_meta(name: str, version: int, meta: MLCollectorData):
-    db = app.client.repository
-    if len(list(db.collectors.find({'name': name, 'version': version}).limit(1))) > 0:
-        db.collectors.update_one({'name': name, 'version': version},
-                                 {"$set": {"meta": dict(meta.meta)}},
-                                 upsert=False)
-        return Response(status_code=HTTPStatus.NO_CONTENT.value)
-    else:
-        raise HTTPException(status_code=404, detail="collector not found")
-
-
-@app.get("/collector")
-async def get_collector_list():
-    database = app.client.repository
-    collection = database.collectors
-    collectors = collection.find({}, {'_id': 0})
-    return list(collectors)
-
-
-@app.get("/collector/{name}/{version}")
-async def get_collector(name: str, version: int):
-    db = app.client.repository
-    collector_id = db.collectors.find_one({'name': name, 'version': version})[
-        'collector_id']
-    db_grid = app.client.repository_grid
-    fs = gridfs.GridFSBucket(db_grid)
-    file_handler = fs.open_download_stream(ObjectId(collector_id))
-
-    def read_gridfs():
-        eachline = file_handler.readline()
-        while eachline:
-            yield eachline
-            eachline = file_handler.readline()
-
-    return StreamingResponse(read_gridfs(), media_type="application/octet-stream")
-
-
-@app.delete("/collector/{name}/{version}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_collector(name: str, version: int):
-    db = app.client.repository
-    db_grid = app.client.repository_grid
-    fs = gridfs.GridFS(db_grid)
-    if len(list(db.collectors.find({'name': name, 'version': version}).limit(1))) > 0:
-        collector_id = db.collectors.find_one({'name': name, 'version': version})[
-            'collector_id']
-        db.collectors.delete_many(
-            {'name': name, 'version': version, 'collector_id': collector_id})
-        fs.delete(ObjectId(collector_id))
-        return Response(status_code=HTTPStatus.NO_CONTENT.value)
-    else:
-        raise HTTPException(status_code=404, detail="Collector not found")
 
 
 @app.get("/models/available")

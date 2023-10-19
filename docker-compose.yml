@@ -3,7 +3,7 @@ version: '3.8'
 services:
     flrepository:
         restart: always
-        image: karola766/flrepository:latest
+        image: assistiot/fl_repository:latest
         container_name: flrepository
         environment:
             - HOST=0.0.0.0
@@ -22,7 +22,7 @@ services:
         depends_on:
             - repositorydb
     repositorydb:
-        image: karola766/repositorydb-priv:latest
+        image: assistiot/fl_repository_db:latest
         container_name: repositorydb
         restart: always
         build:
@@ -32,13 +32,6 @@ services:
             - default
         ports:
             - "27017-27019:27017-27019"
-        #volumes:
-            #- type: bind
-            #  source: ./mongo_db/dump
-            #  target: /dump
-            #- type: bind
-            #  source: ./mongo_volume
-            #  target: /bitnami/mongodb
         extra_hosts:
             - "host.docker.internal:host-gateway"
 

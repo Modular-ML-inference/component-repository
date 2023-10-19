@@ -22,7 +22,7 @@ If you want for the MongoDB database on your custom repositorydb image to initia
 2. Use the `kubectl exec -i -t <podname> -- /bin/bash` command to reach the commandline of the repositorydb pod.
 3. Use the `mongodump --archive db.dump` tool with the appropriate options to create the backup file.
 4. Use `kubectl cp <podname>:/db.dump .db.dump` to move the archive file from the pod to the repository.
-5. Move the db.dump file to the mongo_volume directory.
+5. Move the db.dump file to the mongo_db directory.
 6. Run the `docker-compose -f docker-compose.yml up --force-recreate --build -d` command to construct the right image.
 
 
@@ -41,7 +41,7 @@ The models as a collection contain the information about machine learning models
     "model_name": "base",
     "model_version": "base2",
     "model_id": "62aae16f6ee3b61c9c6c2921"
-  },
+  }
 ```
 
 The models collection can be manipulating using the following endpoints:
@@ -185,5 +185,7 @@ More information about how to construct, connect and reuse data transformations 
 
 The FL Repository is released under the Apache 2.0 license, as we have internally concluded that we are not "offering the functionality of MongoDB, or modified versions of MongoDB, to third parties as a service". However, potential future commercial adopters should be aware that our project uses MongoDB in order to be able to accurately determine the license most applicable to their projects. 
 
+## Additional documentation
 
+The extended or apprioprately modified documentation will be possible to find [here](https://assist-iot-enablers-documentation.readthedocs.io/en/latest/verticals/federated/fl_repository.html).
 

@@ -13,7 +13,7 @@ enablerNodeSelector: {}
 flrepository:
   tier: external
   image:
-    repository: karola766/flrepository
+    repository: assistiot/fl_repository
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"
@@ -71,7 +71,7 @@ flrepository:
 repositorydb:
   tier: internal
   image:
-    repository: karola766/repositorydb
+    repository: assistiot/fl_repository_db
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "latest"

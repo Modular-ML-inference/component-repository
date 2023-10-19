@@ -12,7 +12,7 @@ from starlette.responses import StreamingResponse
 from application.config import HOST, PORT
 from application.database import client
 from application.datamodels.models import MLModel, MLStrategy, MLCollector, MLModelData, \
-     MLTrainingResults, MLStrategyData, FLDataTransformation
+    MLTrainingResults, MLStrategyData, FLDataTransformation
 
 app = FastAPI()
 
@@ -26,8 +26,8 @@ def startup_db_client():
 async def create_model(model: MLModel):
     db = app.client.repository
     if len(list(db.models.find(
-            {'model_name': model.model_name, 'model_version': model.model_version}).limit(
-        1))) > 0:
+                {'model_name': model.model_name, 'model_version': model.model_version}).limit(
+            1))) > 0:
         raise HTTPException(status_code=400,
                             detail='Model with this name and version already in repository')
     else:
@@ -140,7 +140,7 @@ async def create_training_results(training: MLTrainingResults):
     # We can assume training of a given id for a given model version and name
     # to be unique
     if len(list(db.results.find({'model_name': training.model_name, 'model_version':
-        training.model_version, 'training_id': training.training_id}).limit(1))) > 0:
+                                 training.model_version, 'training_id': training.training_id}).limit(1))) > 0:
         raise HTTPException(status_code=400, detail='This training id of a model of '
                                                     'this name and version '
                                                     'already in '
@@ -166,7 +166,7 @@ async def get_results_list(model_name: str, model_version: str):
     database = app.client.repository
     collection = database.results
     results = collection.find({'model_name': model_name, 'model_version':
-        model_version}, {'_id': 0})
+                               model_version}, {'_id': 0})
     return list(results)
 
 
@@ -174,7 +174,7 @@ async def get_results_list(model_name: str, model_version: str):
          status_code=status.HTTP_204_NO_CONTENT)
 async def update_results(model_name: str, model_version: str, training_id: str,
                          configuration_id: str, file:
-UploadFile = File(...)):
+                         UploadFile = File(...)):
     db = app.client.repository
     db_grid = app.client.repository_grid
     fs = gridfs.GridFS(db_grid)
@@ -185,7 +185,7 @@ UploadFile = File(...)):
         weights_id = fs.put(data, filename=f'weights/{model_name}/{model_version}/{configuration_id}',
                                            training_id=f'{training_id}')
         db.results.update_one({'model_name': model_name, 'model_version':
-            model_version, 'training_id': training_id},
+                               model_version, 'training_id': training_id},
                               {"$set": {"weights_id": str(weights_id)}},
                               upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
@@ -206,16 +206,6 @@ async def get_results_weights(model_name: str, model_version: str, training_id: 
                  'training_id': training_id})[
                 'weights_id']
         db_grid = app.client.repository_grid
-        """fs = gridfs.GridFSBucket(db_grid)
-        file_handler = fs.open_download_stream(ObjectId(model_id))
-
-        def read_gridfs():
-            eachline = file_handler.readline()
-            while eachline:
-                yield eachline
-                eachline = file_handler.readline()
-
-        return StreamingResponse(read_gridfs())"""
     fs = gridfs.GridFS(db_grid)
     outputdata = fs.get(ObjectId(model_id)).read()
     return Response(content=base64.b64encode(outputdata))
@@ -235,11 +225,12 @@ async def delete_training_results(model_name: str, model_version: str, training_
              'training_id': training_id})[
             'weights_id']
         db.results.delete_many({'model_name': model_name, 'model_version':
-            model_version, 'training_id': training_id})
+                                model_version, 'training_id': training_id})
         fs.delete(ObjectId(weights_id))
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
-        raise HTTPException(status_code=404, detail="Training results not found")
+        raise HTTPException(
+            status_code=404, detail="Training results not found")
 
 
 @app.post("/strategy", status_code=status.HTTP_201_CREATED)
@@ -339,7 +330,6 @@ async def create_collector(collector: MLCollector):
             raise HTTPException(status_code=500)
 
 
-
 @app.get("/models/available")
 async def get_available_models():
     database = client.repository_grid
@@ -363,7 +353,8 @@ async def create_transformation(transformation: FLDataTransformation):
     db = app.client.repository
     if len(list(db.transformations.find(
             {'id': transformation.id}).limit(1))) > 0:
-        raise HTTPException(status_code=400, detail='Transformation with this id already exists')
+        raise HTTPException(
+            status_code=400, detail='Transformation with this id already exists')
     else:
         try:
             db.transformations.insert_one(transformation.dict(by_alias=True))
@@ -381,8 +372,9 @@ async def update_transformation(id: str, file: UploadFile = File(...)):
         data = await file.read()
         transformation_id = fs.put(data, filename=f'transformation/{id}')
         db.transformations.update_one({'id': id},
-                                 {"$set": {"storage_id": str(transformation_id)}},
-                                 upsert=False)
+                                      {"$set": {"storage_id": str(
+                                          transformation_id)}},
+                                      upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="Transformation not found")
@@ -393,8 +385,8 @@ async def update_transformation_meta(meta: FLDataTransformation):
     db = app.client.repository
     if len(list(db.transformations.find({'id': meta.id}).limit(1))) > 0:
         db.transformations.update_one({'id': meta.id},
-                                 {"$set": dict(meta)},
-                                 upsert=False)
+                                      {"$set": dict(meta)},
+                                      upsert=False)
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="Transformation not found")
@@ -439,6 +431,7 @@ async def delete_transformation(id: str):
         return Response(status_code=HTTPStatus.NO_CONTENT.value)
     else:
         raise HTTPException(status_code=404, detail="Transformation not found")
+
 
 @app.on_event("shutdown")
 def shutdown_db_client():

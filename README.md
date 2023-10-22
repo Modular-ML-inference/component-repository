@@ -181,6 +181,10 @@ The data transformations collection can be manipulating using the following endp
 
 More information about how to construct, connect and reuse data transformations can be found in the documentation of the FL Local Operations.
 
+## Authors
+
+Karolina Bogacka
+
 ## Licensing
 
 The FL Repository is released under the Apache 2.0 license, as we have internally concluded that we are not "offering the functionality of MongoDB, or modified versions of MongoDB, to third parties as a service". However, potential future commercial adopters should be aware that our project uses MongoDB in order to be able to accurately determine the license most applicable to their projects. 

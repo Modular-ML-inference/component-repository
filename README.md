@@ -5,7 +5,7 @@ It was developed as a part of an FL system along with the FL Orchestrator, FL Lo
 
 ## Helm chart
 
-The FL Repository enabler has been developed with the assumption that it will be deployed on Kubernetes with a dedicated Helm chart. To do so, just run `helm install flrepositorylocaldb flrepositorydb`. To make sure that before that the enabler has been configured properly, check if the values in the `repository-configmap` have been properly set (to change them, you can always modify the configmap with `kubectl edit cm repository-configmap` and then recreate the FL Repository pod to propagate the changes). 
+The FL Repository enabler has been developed with the assumption that it will be deployed on Kubernetes with a dedicated Helm chart. To do so, just go to the `helm-chart` directory and run `helm install flrepositorylocaldb flrepositorydb`. To make sure that before that the enabler has been configured properly, check if the values in the `repository-configmap` have been properly set (to change them, you can always modify the configmap with `kubectl edit cm repository-configmap` and then recreate the FL Repository pod to propagate the changes). 
 
 By default, the chart also uses the host's ports `30001` as a Node Port. Other port may also be used, but they will have to be explicitely changed in the `values.yaml` file/ Kubernetes service. You can also set there the specific NodePort you would like to use to reach the FL Repository API by changing the values in the flrepository service.  
 

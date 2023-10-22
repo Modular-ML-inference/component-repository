@@ -183,8 +183,8 @@ More information about how to construct, connect and reuse data transformations 
 
 ## Authors
 
-Karolina Bogacka
-Katarzyna Wasielewska-Michniewska
+- Karolina Bogacka
+- Katarzyna Wasielewska-Michniewska
 
 ## Licensing
 

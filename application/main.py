@@ -210,6 +210,29 @@ async def get_results_weights(model_name: str, model_version: str, training_id: 
     outputdata = fs.get(ObjectId(model_id)).read()
     return Response(content=base64.b64encode(outputdata))
 
+@app.get("/training-results/weights/{model_name}/{model_version}/{training_id}")
+async def get_results_weights_full(model_name: str, model_version: str, training_id: str):
+    db = app.client.repository
+    result = db.results.find_one(
+        {'model_name': model_name, 'model_version': model_version,
+         'training_id': training_id})
+    if 'weights_id' in result and result['weights_id'] is not None:
+        model_id = \
+            db.results.find_one(
+                {'model_name': model_name, 'model_version': model_version,
+                 'training_id': training_id})[
+                'weights_id']
+        db_grid = app.client.repository_grid
+        fs = gridfs.GridFSBucket(db_grid)
+        file_handler = fs.open_download_stream(ObjectId(model_id))
+
+        def read_gridfs():
+            eachline = file_handler.readline()
+            while eachline:
+                yield eachline
+                eachline = file_handler.readline()
+
+        return StreamingResponse(read_gridfs())
 
 @app.delete("/training-results/{model_name}/{model_version}/{training_id}",
             status_code=status.HTTP_204_NO_CONTENT)
@@ -316,20 +339,6 @@ async def delete_strategy(name: str):
         raise HTTPException(status_code=404, detail="Strategy not found")
 
 
-@app.post("/collector", status_code=status.HTTP_201_CREATED)
-async def create_collector(collector: MLCollector):
-    db = app.client.repository
-    if len(list(db.collectors.find(
-            {'name': collector.name, 'version': collector.version}).limit(1))) > 0:
-        raise HTTPException(status_code=400, detail='Collector already exists')
-    else:
-        try:
-            db.collectors.insert_one(collector.dict(by_alias=True))
-        except Exception as e:
-            print("An exception occurred ::", e)
-            raise HTTPException(status_code=500)
-
-
 @app.get("/models/available")
 async def get_available_models():
     database = client.repository_grid
@@ -338,9 +347,9 @@ async def get_available_models():
     return list(modelsAvailable)
 
 
-@app.get("/models/download/shell/{filename}")
-async def get_model_trained(filename: str):
-    parseFilename = filename.replace("_", "/")
+@app.get("/models/download/shell/{model_name}/{model_version}/{configuration_id}")
+async def get_model_trained(model_name:str, model_version: str, configuration_id: str):
+    parseFilename = f'weights/{model_name}/{model_version}/{configuration_id}'
     database = client.repository_grid
     collection = database.fs.files
     model = collection.find({'filename': parseFilename}, {'_id': 0}).sort('uploadDate',

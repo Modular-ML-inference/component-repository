@@ -61,6 +61,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /bitnami/mongodb
+      imagePullSecrets:
+        - name: registry-credentials
   volumeClaimTemplates:
     - metadata:
         name: data

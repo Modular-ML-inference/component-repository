@@ -57,3 +57,5 @@ spec:
             - configMapRef:
                 name: repository-configmap
           {{- end }}
+      imagePullSecrets:
+        - name: gitlab-auth

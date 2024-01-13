@@ -3,8 +3,8 @@ version: '3.8'
 services:
     flrepository:
         restart: always
-        image: assistiot/fl_repository:latest
-        container_name: flrepository
+        image: karola766/componentrepository:latest
+        container_name: componentrepository
         environment:
             - HOST=0.0.0.0
             - PORT=9012
@@ -22,7 +22,7 @@ services:
         depends_on:
             - repositorydb
     repositorydb:
-        image: assistiot/fl_repository_db:latest
+        image: karola766/componentdb:latest
         container_name: repositorydb
         restart: always
         build:

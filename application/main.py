@@ -299,9 +299,7 @@ async def delete_service(id: str):
     else:
         raise HTTPException(status_code=404, detail="Service not found")
 
-#
-    
-#
+
 @app.post("/inferencer", status_code=status.HTTP_201_CREATED)
 async def create_inferencer(inferencer: Inferencer):
     db = app.client.repository

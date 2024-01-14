@@ -169,6 +169,10 @@ The inferencers collection can be manipulating using the following endpoints:
 - **DELETE	/inferencer/{id}**	
   Delete the metadata and the object file of an inferencer with a given id.
 
+## Author
+
+[Karolina Bogacka](https://orcid.org/0000-0002-7109-891X) ([GitHub](https://github.com/Karolina-Bogacka))
+
 ## Licensing
 
 The Component Repository is released under the Apache 2.0 license.

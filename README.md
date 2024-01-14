@@ -1,6 +1,6 @@
 # Component Repository
 
-The Component Repository is a supplementary application to the Modular Inference Server, developed based on the FL Repository enabler, which is a part of the [Assist-IoT project](https://assist-iot.eu/). It allows for the storage of reusable components for ML inference, such as ML models, services, inferencers and data transformations.
+The Component Repository is a supplementary application to the Modular Inference Server, developed based on the FL Repository enabler, which is a part of the [ASSIST-IoT project](https://assist-iot.eu/). It allows for the storage of reusable components for ML inference, such as ML models, services, inferencers and data transformations.
 
 ## Helm chart
 
